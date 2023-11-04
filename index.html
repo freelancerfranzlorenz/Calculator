@@ -1,0 +1,155 @@
+<!DOCTYPE html> 
+<html lang="de">
+<head> 
+  <meta charset="utf-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="Calculator" content="Small but powerful - javascript based calculator.">
+  <title>Calculator-js</title> 
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="stylesheet" href="./framework7-bundle.min.css">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./index.css">
+
+  <!-- SERVICE WORKER needed for installable pwa -->
+  <script>
+  if( 'serviceWorker' in navigator ) 
+  { window.addEventListener('load', function() 
+    { navigator.serviceWorker.register( './serviceworker.js' ).then( function(registration)
+      { // Registration was successful
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }, 
+      function(err) 
+      { // registration failed :(
+        console.log('ServiceWorker registration failed: ', err);
+      });
+    } );
+  }
+  </script>
+  <!-- ----------------------------------------------------------------------- -->
+  <script>
+  var gElTextarea = null;
+  var gHistory = { cur:0, lines:[] };
+  //
+  function appInit()
+  {
+    pageSet( 0 );
+    gElTextarea = document.getElementById("input");
+    gElTextarea.addEventListener( "keydown", (e)=>{ inputKey( e ); } );
+    gElTextarea.style.fontSize = "16px";
+    InputResize();
+    let sJson = window.localStorage.getItem( "history" );
+    if( sJson != null )
+    { gHistory = JSON.parse( window.localStorage.getItem( "history" ) ); }
+  }
+  //
+  function InputResize() 
+  { 
+    let Page = document.getElementById( "inputdiv" );
+    let nLineHeight = parseInt( gElTextarea.style.fontSize ) * 1.4;
+    gElTextarea.rows = Page.clientHeight / nLineHeight;
+  }
+  //
+  function pageSet( nPage )
+  { 
+    let aPages = document.getElementsByClassName( "page-content" );
+    for( let nIdx=0; nIdx<aPages.length; nIdx++ )
+      aPages[nIdx].hidden = ( nPage != nIdx );
+  }
+  //
+  function writeln( sLine )
+  { gElTextarea.value += "\r\n"+sLine; }
+  //
+  function write( sLine )
+  { gElTextarea.value += sLine; }
+  //
+  function help()
+  {
+    writeln( "write(<string>)  writes a string to the output window" );
+    writeln( "writeln(<string>) writes a string with additional CR+LF" );
+    writeln( "-end-of-help-" );
+  }
+  //
+  function inputKey( event )
+  {
+    if( event.key == "Enter" )
+    {
+      let sLine = gElTextarea.value.split( "\n" ).pop();
+      gHistory.lines.push( sLine );
+      gHistory.cur = gHistory.lines.length;
+      window.localStorage.setItem( "history", JSON.stringify( gHistory ) );
+      //
+      sLine = sLine.replaceAll( "m.", "Math." );
+      let sResult = "?";
+      try { sResult = eval?.( sLine ); }
+      catch { }
+      gElTextarea.value += "\r\n"+sResult;
+    }
+    else if( event.key == "ArrowUp" )
+    {
+      event.preventDefault();
+      let aLines = gElTextarea.value.split( "\n" );
+      aLines.pop();
+      if( gHistory.cur > 0 ) { gHistory.cur -= 1; }
+      aLines.push( gHistory.lines[gHistory.cur] );
+      gElTextarea.value = aLines.join( "\n" );
+    }
+    else if( event.key == "ArrowDown" )
+    {
+      event.preventDefault();
+      let aLines = gElTextarea.value.split( "\n" );
+      aLines.pop();
+      if( gHistory.cur < gHistory.lines.length-1 ) { gHistory.cur += 1; }
+      aLines.push( gHistory.lines[gHistory.cur] );
+      gElTextarea.value = aLines.join( "\n" );
+    }
+    else 
+    {
+      console.log( event.key );      
+    }
+  }
+  </script>
+</head> 
+
+<body class="color-theme-blue" onload="appInit();"> 
+
+<div id="app"> 
+<div class="view view-main"> 
+<div data-name="home" class="page"> 
+  <div class="navbar"> 
+    <div class="navbar-inner" style="background-color:#E0E040"> 
+      <div class="left"> <img src="./navbaricon.svg" class="navbariconl" onclick="pageSet(0);" alt="Home"/> </div>
+      <div class="title" style="margin-left:0.5em;">Calculator</div>
+      <div class="right"> <img src="./navbariconr.svg" class="navbariconr" onclick="pageSet(1);" alt="Setup"/> </div>
+    </div>
+  </div>
+
+  <!-- Scrollable page content --> 
+  <div class="page-content pagebackground" id="pageInput">
+    <br/> 
+    <div id="inputdiv" style="margin-left:1em;width:calc(100% - 2em);height:calc(100% - 2em);">
+    <textarea id="input" autofocus style="width:100% !important;resize:both;background-color:grey;color:white;caret-shape:block;padding:10px 10px 10px 10px;"></textarea>
+    </div>
+    <!-- style="margin:2em 1em 1em 1em;width:calc(100vw - 2em);height:30em;background-color:grey;color:white;caret-shape:block;font-size:3vh;" -->
+  </div>  <!-- div class="page..." -->
+
+  <!-- Scrollable page content --> 
+  <div class="page-content pagebackground"> 
+  </div>    <!-- div class="page..." -->
+  
+</div>  <!-- div data-name="home" class="page" --> 
+</div>  <!-- div class="view view-main" --> 
+</div>  <!-- div id="app" --> 
+
+<script src="./framework7-bundle.min.js"></script> 
+<script>
+var app = new Framework7(
+{
+  el: '#app', name: 'My App', id: 'com.myapp.test',
+  panel: { swipe: true, },
+  routes: [ { path: '/about/', url: 'about.html', }, ],
+} );
+var mainView = app.views.create( '.view-main' );
+</script>
+</body> 
+</html>
