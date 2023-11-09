@@ -33,7 +33,6 @@
   //
   function appInit()
   {
-    pageSet( 0 );
     gElTextarea = document.getElementById("input");
     gElTextarea.addEventListener( "keydown", (e)=>{ inputKey( e ); } );
     gElTextarea.style.fontSize = "16px";
@@ -41,6 +40,12 @@
     let sJson = window.localStorage.getItem( "history" );
     if( sJson != null )
     { gHistory = JSON.parse( window.localStorage.getItem( "history" ) ); }
+    let aButs = document.getElementsByTagName("button");
+    for( let n=0; n<aButs.length; n++ )
+    { aButs[n].className = "button button-raised button-fill button-round color-gray";
+      let But = aButs[n];
+      aButs[n].addEventListener( "click", function(){ inputBut(But); } );
+    }
   }
   //
   function InputResize() 
@@ -48,13 +53,6 @@
     let Page = document.getElementById( "inputdiv" );
     let nLineHeight = parseInt( gElTextarea.style.fontSize ) * 1.4;
     gElTextarea.rows = Page.clientHeight / nLineHeight;
-  }
-  //
-  function pageSet( nPage )
-  { 
-    let aPages = document.getElementsByClassName( "page-content" );
-    for( let nIdx=0; nIdx<aPages.length; nIdx++ )
-      aPages[nIdx].hidden = ( nPage != nIdx );
   }
   //
   function writeln( sLine )
@@ -70,9 +68,20 @@
     writeln( "-end-of-help-" );
   }
   //
-  function inputKey( event )
-  {
-    if( event.key == "Enter" )
+  function inputBut( But )
+  { let event = { key:"" };
+    if( null != But.getAttribute( "txt" ) )
+    { gElTextarea.value += But.getAttribute( "txt" ); }
+    else if( null != But.getAttribute( "key" ) )
+    { event.key = But.getAttribute( "key" ); 
+      inputKey( event, false );
+    }
+    else
+    { gElTextarea.value += But.innerText; }
+  }
+  //
+  function inputKey( event, bKeyEvent=true )
+  { if( event.key == "Enter" )
     {
       let sLine = gElTextarea.value.split( "\n" ).pop();
       gHistory.lines.push( sLine );
@@ -84,10 +93,12 @@
       try { sResult = eval?.( sLine ); }
       catch { }
       gElTextarea.value += "\r\n"+sResult;
+      if( ! bKeyEvent )
+      { gElTextarea.value += "\r\n"; }
     }
     else if( event.key == "ArrowUp" )
     {
-      event.preventDefault();
+      if( bKeyEvent ) { event.preventDefault(); }
       let aLines = gElTextarea.value.split( "\n" );
       aLines.pop();
       if( gHistory.cur > 0 ) { gHistory.cur -= 1; }
@@ -96,7 +107,7 @@
     }
     else if( event.key == "ArrowDown" )
     {
-      event.preventDefault();
+      if( bKeyEvent ) { event.preventDefault(); }
       let aLines = gElTextarea.value.split( "\n" );
       aLines.pop();
       if( gHistory.cur < gHistory.lines.length-1 ) { gHistory.cur += 1; }
@@ -104,9 +115,18 @@
       gElTextarea.value = aLines.join( "\n" );
     }
     else 
-    {
-      console.log( event.key );      
+    { console.log( event.key );      
     }
+  }
+  //
+  function keyboardShowHide()
+  {
+    let El = document.getElementById( "keyboard" );
+    if( El.style.display == "none" )
+    { El.style.display = "block"; }
+    else
+    { El.style.display = "none"; }
+    InputResize();
   }
   </script>
 </head> 
@@ -120,23 +140,60 @@
     <div class="navbar-inner" style="background-color:#E0E040"> 
       <div class="left"> <img src="./navbaricon.svg" class="navbariconl" onclick="pageSet(0);" alt="Home"/> </div>
       <div class="title" style="margin-left:0.5em;">Calculator</div>
-      <div class="right"> <img src="./navbariconr.svg" class="navbariconr" onclick="pageSet(1);" alt="Setup"/> </div>
+      <div class="right"> <img src="./navbariconr.svg" class="navbariconr" onclick="keyboardShowHide();" alt="Setup"/> </div>
     </div>
   </div>
-
+  <div class="toolbar messagebar" id="keyboard" style="display:none;background-color:lightgray;">
+    <div class="toolbar-inner">
+      <table width="100%">
+        <tr>
+          <td><button>7</button></td>
+          <td><button>8</button></td>
+          <td><button>9</button></td>
+          <td><button>+</button></td>
+          <td><button>=</button></td>
+          <td><button>(</button></td>
+          <td><button>)</button></td>
+        </tr>
+        <tr>
+          <td><button>4</button></td>
+          <td><button>5</button></td>
+          <td><button>6</button></td>
+          <td><button>-</button></td>
+          <td><button>;</button></td>
+          <td><button>[</button></td>
+          <td><button>]</button></td>
+        </tr>
+        <tr>
+          <td><button>1</button></td>
+          <td><button>2</button></td>
+          <td><button>3</button></td>
+          <td><button>*</button></td>
+          <td><button txt="var ">v</button></td>
+          <td><button txt="write(">w</button></td>
+          <td><button txt="writeln(">l</button></td>
+        </tr>
+        <tr>
+          <td><button>0</button></td>
+          <td><button>.</button></td>
+          <td><button>,</button></td>
+          <td><button>/</button></td>
+          <td><button key="ArrowUp">&uarr;</button></td>
+          <td><button key="ArrowDown">&darr;</button></td>
+          <td><button key="Enter">&crarr;</button></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+      
   <!-- Scrollable page content --> 
   <div class="page-content pagebackground" id="pageInput">
     <br/> 
     <div id="inputdiv" style="margin-left:1em;width:calc(100% - 2em);height:calc(100% - 2em);">
-    <textarea id="input" autofocus style="width:100% !important;resize:both;background-color:grey;color:white;caret-shape:block;padding:10px 10px 10px 10px;"></textarea>
+    <textarea id="input" autofocus style="width:100% !important;resize:both;background-color:lightgrey;color:white;caret-shape:block;padding:10px 10px 10px 10px;"></textarea>
     </div>
-    <!-- style="margin:2em 1em 1em 1em;width:calc(100vw - 2em);height:30em;background-color:grey;color:white;caret-shape:block;font-size:3vh;" -->
   </div>  <!-- div class="page..." -->
 
-  <!-- Scrollable page content --> 
-  <div class="page-content pagebackground"> 
-  </div>    <!-- div class="page..." -->
-  
 </div>  <!-- div data-name="home" class="page" --> 
 </div>  <!-- div class="view view-main" --> 
 </div>  <!-- div id="app" --> 
