@@ -55,6 +55,21 @@
     gElTextarea.rows = Page.clientHeight / nLineHeight;
   }
   //
+  function hex( nVal ) 
+  { writeln( "0x"+Math.floor( nVal ).toString(16) ); }
+  //
+  function bin( nVal, nLen=0 ) 
+  { let sVal = "";
+    if( nLen <= 0 )
+    { sVal = nVal.toString( 2 ); }
+    else
+    { sVal = "0".repeat( nLen );
+      sVal += (nVal).toString( 2 );
+      sVal = sVal.slice( -nLen );
+    }
+    writeln( "0b"+sVal );
+  }
+  //
   function writeln( sLine )
   { gElTextarea.value += "\r\n"+sLine; }
   //
@@ -63,9 +78,12 @@
   //
   function help()
   {
-    writeln( "write(<string>)  writes a string to the output window" );
-    writeln( "writeln(<string>) writes a string with additional CR+LF" );
-    writeln( "-end-of-help-" );
+   writeln( "bin(<value>) writes the binary value of <value>" );
+   writeln( "bin(<value>,<len>) writes the binary value of <value> <len> length" );
+   writeln( "hex(<value>) writes the hexadecimal value of <value>" );
+   writeln( "write(<string>)  writes the <string> to the output window" );
+   writeln( "writeln(<string>) writes the <string> with additional CR+LF" );
+   writeln( "-end-of-help-" );
   }
   //
   function inputBut( But )
