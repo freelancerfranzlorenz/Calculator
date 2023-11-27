@@ -56,7 +56,7 @@
   }
   //
   function hex( nVal ) 
-  { writeln( "0x"+Math.floor( nVal ).toString(16) ); }
+  { return( "0x"+Math.floor( nVal ).toString(16) ); }
   //
   function bin( nVal, nLen=0 ) 
   { let sVal = "";
@@ -67,8 +67,14 @@
       sVal += (nVal).toString( 2 );
       sVal = sVal.slice( -nLen );
     }
-    writeln( "0b"+sVal );
+    return( "0b"+sVal );
   }
+  //
+  function l2db( nVal )
+  { return Math.log10( nVal )*20; }
+  //
+  function db2l( nVal )
+  { return Math.pow( 10, nVal/20 ); }
   //
   function writeln( sLine )
   { gElTextarea.value += "\r\n"+sLine; }
@@ -78,11 +84,13 @@
   //
   function help()
   {
-   writeln( "bin(<value>) writes the binary value of <value>" );
-   writeln( "bin(<value>,<len>) writes the binary value of <value> <len> length" );
-   writeln( "hex(<value>) writes the hexadecimal value of <value>" );
-   writeln( "write(<string>)  writes the <string> to the output window" );
-   writeln( "writeln(<string>) writes the <string> with additional CR+LF" );
+   writeln( "bin(<val>) returns the binary value of <val>" );
+   writeln( "bin(<val>,<len>) returns the binary value of <val> <len> length" );
+   writeln( "hex(<val>) returns the hexadecimal value of <val>" );
+   writeln( "l2db(<val> returns the dB value of linear value <val>" );
+   writeln( "db2l(<val> returns the linear value of decibel value <val>" );
+   writeln( "write(<str>)  writes the <str> to the output window" );
+   writeln( "writeln(<str>) writes the <str> with additional CR+LF" );
    writeln( "-end-of-help-" );
   }
   //
